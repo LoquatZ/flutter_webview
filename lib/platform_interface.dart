@@ -30,6 +30,9 @@ abstract class WebViewPlatformCallbacksHandler {
   /// Invoked by [WebViewPlatformController] when a page has finished loading.
   void onPageFinished(String url);
 
+  /// Invoked by [WebViewPlatformController] when a page has finished loading.
+  void shouldInterceptRequest(String url);
+
   /// Invoked by [WebViewPlatformController] when a page is loading.
   /// /// Only works when [WebSettings.hasProgressTracking] is set to `true`.
   void onProgress(int progress);

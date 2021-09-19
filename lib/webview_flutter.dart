@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -57,6 +58,13 @@ class NavigationRequest {
   String toString() {
     return '$runtimeType(url: $url, isForMainFrame: $isForMainFrame)';
   }
+}
+
+class Response {
+  final String mineType;
+  final String encoding;
+  final Uint8List data;
+  Response(this.mineType, this.encoding, this.data);
 }
 
 /// A decision on how to handle a navigation request.
@@ -145,6 +153,9 @@ typedef void PageStartedCallback(String url);
 /// Signature for when a [WebView] has finished loading a page.
 typedef void PageFinishedCallback(String url);
 
+/// Signature for when a [WebView] interceptRequest .
+typedef void ShouldInterceptRequestCallback(String url);
+
 /// Signature for when a [WebView] is loading a page.
 typedef void PageLoadingCallback(int progress);
 
@@ -171,6 +182,7 @@ enum AutoMediaPlaybackPolicy {
 }
 
 final RegExp _validChannelNames = RegExp('^[a-zA-Z_][a-zA-Z0-9_]*\$');
+
 
 /// A named channel for receiving messaged from JavaScript code running inside a web view.
 class JavascriptChannel {
@@ -223,6 +235,7 @@ class WebView extends StatefulWidget {
     this.gestureRecognizers,
     this.onPageStarted,
     this.onPageFinished,
+    this.shouldInterceptRequest,
     this.onProgress,
     this.onWebResourceError,
     this.debuggingEnabled = false,
@@ -363,6 +376,8 @@ class WebView extends StatefulWidget {
   /// directly in the HTML has been loaded and code injected with
   /// [WebViewController.evaluateJavascript] can assume this.
   final PageFinishedCallback? onPageFinished;
+
+  final ShouldInterceptRequestCallback? shouldInterceptRequest;
 
   /// Invoked when a page is loading.
   final PageLoadingCallback? onProgress;
@@ -593,6 +608,13 @@ class _PlatformCallbacksHandler implements WebViewPlatformCallbacksHandler {
     }
   }
 
+  @override
+  void shouldInterceptRequest(String url) async {
+    if (_widget.shouldInterceptRequest != null) {
+      return _widget.shouldInterceptRequest!(url);
+    }
+  }
+
   void onWebResourceError(WebResourceError error) {
     if (_widget.onWebResourceError != null) {
       _widget.onWebResourceError!(error);
@@ -608,6 +630,7 @@ class _PlatformCallbacksHandler implements WebViewPlatformCallbacksHandler {
       _javascriptChannels[channel.name] = channel;
     }
   }
+
 }
 
 /// Controls a [WebView].

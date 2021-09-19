@@ -82,6 +82,10 @@ class _WebViewExampleState extends State<WebViewExample> {
           onPageFinished: (String url) {
             print('Page finished loading: $url');
           },
+          shouldInterceptRequest: (String url) {
+            print('Page shouldInterceptRequest loading: $url');
+            return null;
+          },
           gestureNavigationEnabled: true,
         );
       }),
