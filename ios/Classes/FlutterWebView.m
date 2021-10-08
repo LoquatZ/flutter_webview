@@ -8,6 +8,9 @@
 #import "JavaScriptChannelHandler.h"
 #import "FlutterNSURLProtocol.h"
 #import "FlutterInstance.h"
+#import "NSURLProtocol+WKWebView.h"
+#import "FlutterNSURLProtocol.h"
+#import "SSWKURL.h"
 
 @implementation FLTWebViewFactory {
     NSObject<FlutterBinaryMessenger>* _messenger;
@@ -87,15 +90,28 @@
             [_javaScriptChannelNames addObjectsFromArray:javaScriptChannelNames];
             [self registerJavaScriptChannels:_javaScriptChannelNames controller:userContentController];
         }
-        
+
         NSDictionary<NSString*, id>* settings = args[@"settings"];
-        
+
         WKWebViewConfiguration* configuration = [[WKWebViewConfiguration alloc] init];
+        
+        //用于WebView产生的请求进行拦截
+        if (@available(iOS 11.0, *)) {
+            //添加URLScheme代理
+            NSLog(@"========添加代理");
+            [configuration ssRegisterURLProtocol:[SSWKURLProtocol class]];
+        } else {
+            //注册拦截所有请求
+            [NSURLProtocol registerClass:[FlutterNSURLProtocol class]];
+            [NSURLProtocol wk_registerScheme:@"http"];
+            [NSURLProtocol wk_registerScheme:@"https"];
+        }
+        
         [self applyConfigurationSettings:settings toConfiguration:configuration];
         configuration.userContentController = userContentController;
         [self updateAutoMediaPlaybackPolicy:args[@"autoMediaPlaybackPolicy"]
                             inConfiguration:configuration];
-        
+        configuration.allowsAirPlayForMediaPlayback = YES;
         _webView = [[FLTWKWebView alloc] initWithFrame:frame configuration:configuration];
         _navigationDelegate = [[FLTWKNavigationDelegate alloc] initWithChannel:_channel];
         

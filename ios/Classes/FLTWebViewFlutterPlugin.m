@@ -5,8 +5,6 @@
 #import "FLTWebViewFlutterPlugin.h"
 #import "FLTCookieManager.h"
 #import "FlutterWebView.h"
-#import "FlutterNSURLProtocol.h"
-#import "NSURLProtocol+WKWebView.h"
 
 @implementation FLTWebViewFlutterPlugin
 
@@ -15,10 +13,6 @@
     [[FLTWebViewFactory alloc] initWithMessenger:registrar.messenger];
     [registrar registerViewFactory:webviewFactory withId:@"plugins.flutter.io/webview"];
     [FLTCookieManager registerWithRegistrar:registrar];
-    //注册拦截所有请求
-    [NSURLProtocol registerClass:[FlutterNSURLProtocol class]];
-    [NSURLProtocol wk_registerScheme:@"http"];
-    [NSURLProtocol wk_registerScheme:@"https"];
 }
 
 @end
